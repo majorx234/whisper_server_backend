@@ -1,0 +1,23 @@
+[package]
+name = "whisper_server_backend"
+version = "0.1.0"
+authors = ["MajorX234 <majorx234@googlemail.com>"]
+edition = "2021"
+
+[lib]
+name = "backend"
+path= "src/lib.rs"
+
+[[bin]]
+name = "whisper_server_backend"
+path = "src/main.rs"
+
+[dependencies]
+axum = { version = "0.8.8", features=["ws"]}
+axum-extra = { version = "0.12.5", features = ["typed-header"] }
+bytes = "1.11.0"
+tokio = { version = "1.49.0", features = ["full"] }
+tower-http = { version = "0.6.8", features = ["fs", "trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+env_logger = "0.11.8"
