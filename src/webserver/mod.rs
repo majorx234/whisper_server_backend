@@ -9,6 +9,7 @@ use axum::{
     response::IntoResponse,
 };
 use axum_extra::{headers, TypedHeader};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -27,8 +28,8 @@ pub async fn websocket_handler(State(state): State<AppState>,
         .on_upgrade(move |socket| handle_web_socket(socket, addr))
 }
 
-async fn send_close_message(mut socket: WebSocket, code: u16, reason: &str) {
-    _ = socket
+async fn send_close_message(mut sender: SplitSink<WebSocket, Message>, code: u16, reason: &str) {
+    _ = sender
         .send(Message::Close(Some(CloseFrame {
             code,
             reason: reason.into(),
@@ -50,37 +51,40 @@ async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
         // If we can not send messages, there is no way to salvage the statemachine anyway.
         return;
     }
-    // Returns `None` if the stream has closed.
+    // TODO: Returns `None` if the stream has closed.
     // debugging websocket connection
-    while let Some(msg) = socket.recv().await {
+
+    let (mut sender, mut receiver) = socket.split();
+
+    while let Some(msg) = receiver.next().await {
         // TODO: process messages in extra function
         if let Ok(msg) = msg {
             match msg {
                 Message::Text(utf8_bytes) => {
                     println!("Text received: {}", utf8_bytes);
-                    let result = socket
+                    let result = sender
                         .send(Message::Text(
                             format!("Echo back text: {}", utf8_bytes).into(),
                         ))
                         .await;
                     if let Err(error) = result {
                         println!("Error sending: {}", error);
-                        send_close_message(socket, 1011, &format!("Error occured: {}", error))
-                            .await;
+                        // send_close_message(socket, 1011, &format!("Error occured: {}", error))
+                          //  .await;
                         break;
                     }
                 }
                 Message::Binary(bytes) => {
                     println!("Received bytes of length: {}", bytes.len());
-                    let result = socket
+                    let result = sender
                         .send(Message::Text(
                             format!("Received bytes of length: {}", bytes.len()).into(),
                         ))
                         .await;
                     if let Err(error) = result {
                         println!("Error sending: {}", error);
-                        send_close_message(socket, 1011, &format!("Error occured: {}", error))
-                            .await;
+                        // send_close_message(socket, 1011, &format!("Error occured: {}", error))
+                           // .await;
                         break;
                     }
                 }
@@ -100,7 +104,7 @@ async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
         } else {
             let error = msg.err().unwrap();
             println!("Error receiving message: {:?}", error);
-            send_close_message(socket, 1011, &format!("Error occured: {}", error)).await;
+            // send_close_message(socket, 1011, &format!("Error occured: {}", error)).await;
             break;
         }
     }
