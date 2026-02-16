@@ -69,8 +69,8 @@ async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
                         .await;
                     if let Err(error) = result {
                         println!("Error sending: {}", error);
-                        // send_close_message(socket, 1011, &format!("Error occured: {}", error))
-                          //  .await;
+                        send_close_message(sender, 1011, &format!("Error occured: {}", error))
+                            .await;
                         break;
                     }
                 }
@@ -83,8 +83,8 @@ async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
                         .await;
                     if let Err(error) = result {
                         println!("Error sending: {}", error);
-                        // send_close_message(socket, 1011, &format!("Error occured: {}", error))
-                           // .await;
+                        send_close_message(sender, 1011, &format!("Error occured: {}", error))
+                            .await;
                         break;
                     }
                 }
