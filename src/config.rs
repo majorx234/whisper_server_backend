@@ -9,6 +9,8 @@ pub struct Config {
     pub frontend_dir_path: PathBuf,
     pub file_store_dir_path: PathBuf,
     pub rust_log: String,
+    pub model_path: PathBuf,
+    pub vad_model_path: PathBuf,
 }
 
 impl Config {
@@ -31,12 +33,20 @@ impl Config {
         // todo set folder where executed
         let rust_log =
             std::env::var("RUST_LOG").unwrap_or_else(|_| "todo_axum=debug,tower_http=debug".into());
+        let model_path_var = std::env::var("MODEL_PATH").expect("MODEL_PATH not set");
+        let mut model_path = PathBuf::new();
+        model_path.push(model_path_var);
+        let vad_model_path_var = std::env::var("VAD_MODEL_PATH").expect("VAD_MODEL_PATH not set");
+        let mut vad_model_path = PathBuf::new();
+        vad_model_path.push(vad_model_path_var);
         Config {
             host_ip,
             port,
             frontend_dir_path,
             file_store_dir_path: file_store_dir.into(),
             rust_log,
+            model_path,
+            vad_model_path,
         }
     }
 
@@ -53,6 +63,14 @@ impl Config {
 
     pub fn get_rust_log(&self) -> &str {
         &self.rust_log
+    }
+
+    pub fn get_model_path(&self) -> &Path {
+        &self.vad_model_path.as_path()
+    }
+
+    pub fn get_vad_model_path(&self) -> &Path {
+        &self.vad_model_path.as_path()
     }
 }
 
