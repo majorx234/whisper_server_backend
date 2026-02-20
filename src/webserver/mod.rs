@@ -27,7 +27,7 @@ pub async fn websocket_handler(State(state): State<AppState>,
 
     // println!("`{user_agent}` at {addr} connected.");
     ws.on_failed_upgrade(|error| println!("Error upgrading websocket: {}", error))
-        .on_upgrade(move |socket| handle_web_socket(socket, addr))
+        .on_upgrade(move |socket| handle_web_socket(socket, addr, None))
 }
 
 async fn send_close_message(mut sender: SplitSink<WebSocket, Message>, code: u16, reason: &str) {
@@ -39,7 +39,7 @@ async fn send_close_message(mut sender: SplitSink<WebSocket, Message>, code: u16
         .await;
 }
 
-async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
+async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr, scribble: Option<Scribble<WhisperBackend>>) {
     // send a ping (unsupported by some browsers) just to kick things off and get a response
     if socket
         .send(Message::Ping(Bytes::from_static(&[1, 2, 3])))
@@ -88,6 +88,9 @@ async fn handle_web_socket(mut socket: WebSocket, who: SocketAddr) {
                         send_close_message(sender, 1011, &format!("Error occured: {}", error))
                             .await;
                         break;
+                    }
+                    if let Some(scribble) = scribble{
+                        // TODO: async interface with scribble API
                     }
                 }
                 Message::Close(c) => {

@@ -4,7 +4,7 @@ use backend::{config::Config, webserver::{AppState, websocket_handler}};
 use axum::{extract::State, Router, routing::any};
 use tower_http::{services::ServeDir,trace::{DefaultMakeSpan, TraceLayer}};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use scribble::{Opts, OutputType, Scribble};
+use scribble::Scribble;
 
 
 #[tokio::main]
