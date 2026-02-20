@@ -4,16 +4,20 @@ use backend::{config::Config, webserver::{AppState, websocket_handler}};
 use axum::{extract::State, Router, routing::any};
 use tower_http::{services::ServeDir,trace::{DefaultMakeSpan, TraceLayer}};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use scribble::{Opts, OutputType, Scribble};
 
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
+    let config = Config::new();
     let server_state = AppState{
         value: 0,
+        scribble: std::sync::Arc::new(Mutex::new(Scribble::new(
+            [config.get_model_path().to_str().ok_or("model_path error")?],
+            config.get_vad_model_path().to_str().ok_or("vlad_model_path error")?,
+        )?)),
     };
-
-    let config = Config::new();
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(config.get_rust_log()))
         .with(tracing_subscriber::fmt::layer())

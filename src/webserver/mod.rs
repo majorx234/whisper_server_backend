@@ -1,5 +1,5 @@
-use std::{net::SocketAddr, sync::Mutex};
-
+use std::{net::SocketAddr, sync::{Arc, Mutex}};
+use scribble::{Opts, OutputType, Scribble, WhisperBackend};
 
 use axum::{
     body::Bytes,
@@ -16,6 +16,7 @@ use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 pub struct AppState {
     // pub next_id: std::sync::Arc<AtomicU64>,
     pub value: u32,
+    pub scribble: Arc<Mutex<Scribble<WhisperBackend>>>,
 }
 
 pub async fn websocket_handler(State(state): State<AppState>,
